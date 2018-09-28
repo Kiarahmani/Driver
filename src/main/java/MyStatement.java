@@ -1,16 +1,31 @@
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
+import sync.OpType;
+import sync.RemoteService;
+
 public class MyStatement implements Statement {
 
 	private Statement orgStatement;
+	private RemoteService stub;
+	private OpType type;
+	private MyConnection con;
 
-	public MyStatement(Statement orgS) {
+	public MyStatement(Statement orgS, RemoteService stub, OpType ot, MyConnection con) {
 		this.orgStatement = orgS;
+		this.stub = stub;
+		this.type = ot;
+		this.con = con;
+	}
 
+	// looks at the parent connection's current seq number and returns a fresh type
+	// to be used at the scheduler
+	private OpType updatedType() {
+		return new OpType(this.type.getTxnInsID(), this.type.getKind(), con.getSeq());
 	}
 
 	public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -24,11 +39,23 @@ public class MyStatement implements Statement {
 	}
 
 	public ResultSet executeQuery(String sql) throws SQLException {
-		// KIATODO -- must consult the central scheduler
+
+		try {
+			stub.execRequest(updatedType());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		con.incSeq();
 		return orgStatement.executeQuery(sql);
 	}
 
 	public int executeUpdate(String sql) throws SQLException {
+		try {
+			stub.execRequest(updatedType());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		con.incSeq();
 		return orgStatement.executeUpdate(sql);
 	}
 

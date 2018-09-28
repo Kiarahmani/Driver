@@ -2,6 +2,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -21,20 +22,47 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
+import sync.OpType;
+import sync.RemoteService;
+
 public class MyPreparedStatement implements PreparedStatement {
 
 	private PreparedStatement orgPreparedStatement;
+	private RemoteService stub;
+	private OpType type;
+	private MyConnection con;
 
-	public MyPreparedStatement(PreparedStatement orgPS) throws SQLException {
+	public MyPreparedStatement(PreparedStatement orgPS, RemoteService stub, OpType ot, MyConnection con)
+			throws SQLException {
 		orgPreparedStatement = orgPS;
+		this.stub = stub;
+		this.type = ot;
+		this.con = con;
+	}
+
+	// looks at the parent connection's current seq number and returns a fresh type
+	// to be used at the scheduler
+	private OpType updatedType() {
+		return new OpType(this.type.getTxnInsID(), this.type.getKind(), con.getSeq());
 	}
 
 	public ResultSet executeQuery(String sql) throws SQLException {
-		// TODO Must first consult the central scheduler
+		try {
+			stub.execRequest(updatedType());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		con.incSeq();
 		return orgPreparedStatement.executeQuery(sql);
 	}
 
 	public int executeUpdate(String sql) throws SQLException {
+		try {
+			stub.execRequest(updatedType());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		con.incSeq();
 		return orgPreparedStatement.executeUpdate(sql);
 	}
 
@@ -250,10 +278,22 @@ public class MyPreparedStatement implements PreparedStatement {
 
 	public ResultSet executeQuery() throws SQLException {
 		// TODO Must first consult with the central scheduler
+		try {
+			stub.execRequest(updatedType());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		con.incSeq();
 		return orgPreparedStatement.executeQuery();
 	}
 
 	public int executeUpdate() throws SQLException {
+		try {
+			stub.execRequest(updatedType());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		con.incSeq();
 		return orgPreparedStatement.executeUpdate();
 	}
 

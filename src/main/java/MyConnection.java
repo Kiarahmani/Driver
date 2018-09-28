@@ -20,18 +20,32 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import sync.OpType;
 import sync.RemoteService;
 
 public class MyConnection implements Connection {
 	private Connection orgConnection;
+	RemoteService stub;
+	private int insID;
+	private int seq;
+
+	public void incSeq() {
+		this.seq++;
+	}
+
+	public int getSeq() {
+		return this.seq;
+	}
 
 	public MyConnection(int insID) throws Exception {
 		Class.forName("com.mysql.jdbc.Driver");
 		orgConnection = DriverManager
 				.getConnection("jdbc:mysql://localhost/feedback?" + "user=sqluser&password=sqluserpw&useSSL=false");
 		Registry registry = LocateRegistry.getRegistry(null);
-		RemoteService stub = (RemoteService) registry.lookup("RemoteService");
+		stub = (RemoteService) registry.lookup("RemoteService");
 		stub.printTestMsg(insID);
+		this.insID = insID;
+		this.seq = 0;
 	}
 
 	public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -45,11 +59,13 @@ public class MyConnection implements Connection {
 	}
 
 	public Statement createStatement() throws SQLException {
-		return new MyStatement(orgConnection.createStatement());
+		OpType ot = new OpType(this.insID, "", -10000);
+		return new MyStatement(orgConnection.createStatement(), stub, ot, this);
 	}
 
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return new MyPreparedStatement(orgConnection.prepareStatement(sql));
+		OpType ot = new OpType(this.insID, "", -10000);
+		return new MyPreparedStatement(orgConnection.prepareStatement(sql), stub, ot, this);
 	}
 
 	public CallableStatement prepareCall(String sql) throws SQLException {
