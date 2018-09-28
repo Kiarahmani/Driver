@@ -32,9 +32,19 @@ public class OpType implements Serializable {
 		return (other.getTxnInsID() == this.txnInsID && other.getSeqNo() == this.seqNo
 				&& this.kind.equals(other.getKind()));
 	}
-	
-	public String toString() {
-		return kind+"[TID#"+txnInsID+"--Seq#"+seqNo+"]";
+
+	@Override
+	public boolean equals(Object obj) {
+		OpType op = (OpType) obj;
+		return (op.getTxnInsID() == this.txnInsID && op.getSeqNo() == this.seqNo && this.kind.equals(op.getKind()));
 	}
 
+	public String toString() {
+		return kind + "[TID#" + txnInsID + "--Seq#" + seqNo + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return kind.hashCode() + txnInsID * 100 + seqNo;
+	}
 }

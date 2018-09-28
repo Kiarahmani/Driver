@@ -17,10 +17,11 @@ public final class DR_schedule {
 		execOrder.add(new OpType(1, "", 0));
 		execOrder.add(new OpType(2, "", 0));
 		execOrder.add(new OpType(3, "", 0));
-		execOrder.add(new OpType(4, "", 0));
+	
 		execOrder.add(new OpType(1, "", 1));
 		execOrder.add(new OpType(2, "", 1));
 		execOrder.add(new OpType(3, "", 1));
+		execOrder.add(new OpType(4, "", 0));
 		execOrder.add(new OpType(4, "", 1));
 
 	}
