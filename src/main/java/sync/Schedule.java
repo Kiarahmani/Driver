@@ -13,11 +13,15 @@ public class Schedule implements RemoteService {
 
 	private ArrayList<OpType> execOrder;
 	private int seqIndex;
-	private int _DATABASE_DELAY = 80;
+	private int _DATABASE_DELAY;
+	private boolean _SHOULD_ENFORCE;
 
-	public Schedule() {
+	public Schedule(int delay, boolean shouldEnforce) {
 		this.seqIndex = 0;
 		this.execOrder = new DR_schedule().getSchedule(); // this can and should be changed per application/anomaly
+		this._SHOULD_ENFORCE = shouldEnforce;
+		this._DATABASE_DELAY = delay;
+
 	}
 
 	// Implementing the interface method
@@ -32,7 +36,7 @@ public class Schedule implements RemoteService {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		if (ot.getTxnInsID() != -1) {
+		if (_SHOULD_ENFORCE && ot.getTxnInsID() != -1) {
 			OpType lock = execOrder.get(seqIndex);
 			if (ot.equals(lock)) {
 				System.out.println(ot.toString());
@@ -62,7 +66,7 @@ public class Schedule implements RemoteService {
 					e.printStackTrace();
 				}
 			}
-		} else
-			System.out.println(".");
+		} else {}
+			//System.out.println(".");
 	}
 }

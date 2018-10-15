@@ -6,13 +6,16 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Scheduler extends Schedule {
-	public Scheduler() {
+
+
+	public Scheduler(int delay, boolean shouldEnforce) {
+		super(delay, shouldEnforce);
 	}
 
 	public static void main(String args[]) {
 		try {
 			// Instantiating the implementation class
-			Schedule obj = new Schedule();
+			Schedule obj = new Schedule(Integer.valueOf(args[1]), Boolean.valueOf(args[0]));
 
 			// Exporting the object of implementation class
 			// (here we are exporting the remote object to the stub)
@@ -23,7 +26,7 @@ public class Scheduler extends Schedule {
 			Registry registry = LocateRegistry.getRegistry();
 
 			registry.bind("RemoteService", stub);
-			//System.err.println("Server ready");
+			// System.err.println("Server ready");
 		} catch (Exception e) {
 			System.err.println("Server exception: " + e.toString());
 			e.printStackTrace();
