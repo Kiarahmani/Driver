@@ -11,7 +11,7 @@ public class MyDriver implements Driver {
 
 	public Connection connect(String url, Properties info) throws SQLException {
 		MyConnection myc = null;
-		int insID = Integer.parseInt(info.getProperty("ID"));
+		int insID = Integer.valueOf(info.getProperty("id"));
 		try {
 			myc = new MyConnection(insID);
 		} catch (Exception e) {

@@ -38,11 +38,14 @@ public class MyConnection implements Connection {
 	}
 
 	public MyConnection(int insID) throws Exception {
-		Class.forName("com.mysql.jdbc.Driver");
-		orgConnection = DriverManager
-				.getConnection("jdbc:mysql://localhost/feedback?" + "user=sqluser&password=sqluserpw&useSSL=false");
+		Class.forName("com.github.adejanovski.cassandra.jdbc.CassandraDriver");
+		System.out.println(">> original JDBC driver loaded");
+		orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" + ":1904" + insID + "/testks");
+		System.out.println(">> connection established: localhost:1904" + insID);
 		Registry registry = LocateRegistry.getRegistry(null);
+		System.out.println(">> modified driver registered");
 		stub = (RemoteService) registry.lookup("RemoteService");
+		System.out.println(">> RMI service registered");
 		stub.printTestMsg(insID);
 		this.insID = insID;
 		this.seq = 0;
@@ -63,10 +66,12 @@ public class MyConnection implements Connection {
 		return new MyStatement(orgConnection.createStatement(), stub, ot, this);
 	}
 
+	//XXX
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		OpType ot = new OpType(this.insID, "", -10000);
+		OpType ot = new OpType(this.insID, sql, -10000);
 		return new MyPreparedStatement(orgConnection.prepareStatement(sql), stub, ot, this);
 	}
+	//XXX
 
 	public CallableStatement prepareCall(String sql) throws SQLException {
 		// TODO Auto-generated method stub

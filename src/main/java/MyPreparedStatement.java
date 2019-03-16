@@ -21,6 +21,8 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import sync.OpType;
 import sync.RemoteService;
@@ -31,6 +33,7 @@ public class MyPreparedStatement implements PreparedStatement {
 	private RemoteService stub;
 	private OpType type;
 	private MyConnection con;
+	private Map<Integer, String> bindValues;
 
 	public MyPreparedStatement(PreparedStatement orgPS, RemoteService stub, OpType ot, MyConnection con)
 			throws SQLException {
@@ -38,6 +41,19 @@ public class MyPreparedStatement implements PreparedStatement {
 		this.stub = stub;
 		this.type = ot;
 		this.con = con;
+		this.bindValues = new HashMap<Integer, String>();
+	}
+
+	// replaces the text of the query with the most recent bounded parameters
+	private String updateSQL() {
+		String words = this.type.getKind();
+		int index = 1;
+
+		while (words.indexOf("?") != -1) {
+			words = words.replaceFirst("\\?", this.bindValues.get(index++));
+		}
+
+		return words;
 	}
 
 	// looks at the parent connection's current seq number and returns a fresh type
@@ -47,6 +63,7 @@ public class MyPreparedStatement implements PreparedStatement {
 	}
 
 	public ResultSet executeQuery(String sql) throws SQLException {
+
 		try {
 			stub.execRequest(updatedType());
 		} catch (RemoteException e) {
@@ -277,23 +294,27 @@ public class MyPreparedStatement implements PreparedStatement {
 	}
 
 	public ResultSet executeQuery() throws SQLException {
-		// TODO Must first consult with the central scheduler
+		OpType updatedType = updatedType();
 		try {
-			stub.execRequest(updatedType());
+			stub.execRequest(updatedType);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 		con.incSeq();
+		System.out.println("@R" + updatedType.getTxnInsID() + "@T" + con.getSeq() + "    " + updateSQL());
 		return orgPreparedStatement.executeQuery();
 	}
 
 	public int executeUpdate() throws SQLException {
+		// XXX
+		OpType updatedType = updatedType();
 		try {
-			stub.execRequest(updatedType());
+			stub.execRequest(updatedType);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 		con.incSeq();
+		System.out.println("@R" + updatedType.getTxnInsID() + "@T" + con.getSeq() + "    " + updateSQL());
 		return orgPreparedStatement.executeUpdate();
 	}
 
@@ -318,11 +339,13 @@ public class MyPreparedStatement implements PreparedStatement {
 	}
 
 	public void setInt(int parameterIndex, int x) throws SQLException {
+		this.bindValues.put(parameterIndex, String.valueOf(x));
 		orgPreparedStatement.setInt(parameterIndex, x);
 	}
 
 	public void setLong(int parameterIndex, long x) throws SQLException {
-		// TODO Auto-generated method stub
+		this.bindValues.put(parameterIndex, String.valueOf(x));
+		orgPreparedStatement.setLong(parameterIndex, x);
 
 	}
 
@@ -332,7 +355,8 @@ public class MyPreparedStatement implements PreparedStatement {
 	}
 
 	public void setDouble(int parameterIndex, double x) throws SQLException {
-		// TODO Auto-generated method stub
+		this.bindValues.put(parameterIndex, String.valueOf(x));
+		orgPreparedStatement.setDouble(parameterIndex, x);
 
 	}
 

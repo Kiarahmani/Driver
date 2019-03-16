@@ -26,7 +26,7 @@ public class Scheduler extends Schedule {
 			Registry registry = LocateRegistry.getRegistry();
 
 			registry.bind("RemoteService", stub);
-			// System.err.println("Server ready");
+			System.err.println("Server ready");
 		} catch (Exception e) {
 			System.err.println("Server exception: " + e.toString());
 			e.printStackTrace();
