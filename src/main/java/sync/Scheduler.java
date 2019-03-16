@@ -22,6 +22,7 @@ public class Scheduler extends Schedule {
 			RemoteService stub = (RemoteService) UnicastRemoteObject.exportObject(obj, 0);
 
 			// Binding the remote object (stub) in the registry
+			System.out.println("RMI service registered");
 			LocateRegistry.createRegistry(1099);
 			Registry registry = LocateRegistry.getRegistry();
 

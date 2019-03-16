@@ -11,9 +11,10 @@ public final class DR_schedule {
 	public DR_schedule() {
 		execOrder = new ArrayList<OpType>();
 
+		//execOrder.add(new OpType(1, "", 0));
 		execOrder.add(new OpType(1, "", 0));
 		execOrder.add(new OpType(2, "", 0));
-		execOrder.add(new OpType(1, "", 1));
+		//execOrder.add(new OpType(2, "", 1));
 //		execOrder.add(new OpType(1, "", 0));
 //		execOrder.add(new OpType(2, "", 0));
 //		execOrder.add(new OpType(3, "", 0));

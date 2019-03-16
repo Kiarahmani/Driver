@@ -45,7 +45,7 @@ public class MyConnection implements Connection {
 		Registry registry = LocateRegistry.getRegistry(null);
 		System.out.println(">> modified driver registered");
 		stub = (RemoteService) registry.lookup("RemoteService");
-		System.out.println(">> RMI service registered");
+		System.out.println(">> RMI service connected");
 		stub.printTestMsg(insID);
 		this.insID = insID;
 		this.seq = 0;

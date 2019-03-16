@@ -36,7 +36,7 @@ public class OpType implements Serializable {
 	@Override
 	public boolean equals(Object obj) {
 		OpType op = (OpType) obj;
-		return (op.getTxnInsID() == this.txnInsID && op.getSeqNo() == this.seqNo && this.kind.equals(op.getKind()));
+		return (op.getTxnInsID() == this.txnInsID && op.getSeqNo() == this.seqNo /*&& this.kind.equals(op.getKind())*/);
 	}
 
 	public String toString() {

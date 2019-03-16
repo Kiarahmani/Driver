@@ -31,6 +31,7 @@ public class Schedule implements RemoteService {
 	}
 
 	public void execRequest(OpType ot) throws RemoteException {
+		System.out.println("requested:   " + ot);
 		try {
 			Thread.sleep(_DATABASE_DELAY);
 		} catch (InterruptedException e1) {
@@ -38,26 +39,42 @@ public class Schedule implements RemoteService {
 		}
 		if (_SHOULD_ENFORCE && ot.getTxnInsID() != -1) {
 			OpType lock = execOrder.get(seqIndex);
+			// if it's ot's turn
 			if (ot.equals(lock)) {
-				System.out.println(ot.toString());
 				if (seqIndex < execOrder.size() - 1) {
 					OpType nextLock = execOrder.get(seqIndex + 1);
 					synchronized (nextLock) {
 						seqIndex++;
+						System.out.println("permitting: " + ot);
+						try {
+							Thread.sleep(_DATABASE_DELAY);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
 						nextLock.notify();
 					}
 				}
 			} else {
 				try {
-					OpType myLock = execOrder.get(execOrder.indexOf(ot));
-
+					int myOrder = execOrder.indexOf(ot);
+					if (myOrder == -1) {
+						System.out.println("permitting: " + ot);
+						return;
+					}
+					OpType myLock = execOrder.get(myOrder);
 					synchronized (myLock) {
 						myLock.wait();
-						System.out.println(ot.toString());
+						System.out.println("permitting: " + ot);
 						if (seqIndex < execOrder.size() - 1) {
 							OpType myNextLock = execOrder.get(execOrder.indexOf(ot) + 1);
 							synchronized (myNextLock) {
 								seqIndex++;
+
+								try {
+									Thread.sleep(_DATABASE_DELAY);
+								} catch (InterruptedException e1) {
+									e1.printStackTrace();
+								}
 								myNextLock.notify();
 							}
 						}
@@ -66,7 +83,8 @@ public class Schedule implements RemoteService {
 					e.printStackTrace();
 				}
 			}
-		} else {}
-			//System.out.println(".");
+		} else {
+		}
+		// System.out.println(".");
 	}
 }
