@@ -28,6 +28,10 @@ public class MyConnection implements Connection {
 	RemoteService stub;
 	private int insID;
 	private int seq;
+	private OpType lastUpdate;
+	private OpType lastSelect;
+	private OpType lastDelete;
+	private OpType lastInsert;
 
 	public void incSeq() {
 		this.seq++;
@@ -62,16 +66,70 @@ public class MyConnection implements Connection {
 	}
 
 	public Statement createStatement() throws SQLException {
-		OpType ot = new OpType(this.insID, "", -10000);
-		return new MyStatement(orgConnection.createStatement(), stub, ot, this);
+		return null;
+		// OpType ot = new OpType(this.insID, "", -10000);
+		// return new MyStatement(orgConnection.createStatement(), stub, ot, this);
 	}
 
-	//XXX
+	// XXX
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		OpType ot = new OpType(this.insID, sql, -10000);
+		String arr[] = sql.split(" ");
+		String kind = arr[0];
+		OpType ot = null;
+		int order = 1;
+		String table = "";
+		// parse the query
+		if (kind.equalsIgnoreCase("delete"))
+			table = arr[2];
+		else if (kind.equalsIgnoreCase("update"))
+			table = arr[1];
+		else
+			for (int i = 1; i < arr.length; i++) {
+				if (arr[i].equalsIgnoreCase("from")) {
+					table = arr[i + 1];
+					break;
+				}
+			}
+
+		// detect loops
+		if (kind.equalsIgnoreCase("update")) {
+			if (lastUpdate != null)
+				if (lastUpdate.getQuery().equalsIgnoreCase(sql))
+					order = lastUpdate.getOrder();
+				else
+					order = lastUpdate.getOrder() + 1;
+			ot = new OpType(this.insID, -10000, sql, kind, table, order);
+			this.lastUpdate = ot;
+		}
+		if (kind.equalsIgnoreCase("select")) {
+			if (lastSelect != null)
+				if (lastSelect.getQuery().equalsIgnoreCase(sql))
+					order = lastSelect.getOrder();
+				else
+					order = lastSelect.getOrder() + 1;
+			ot = new OpType(this.insID, -10000, sql, kind, table, order);
+			this.lastSelect = ot;
+		}
+		if (kind.equalsIgnoreCase("delete")) {
+			if (lastDelete.getQuery().equalsIgnoreCase(sql))
+				order = lastDelete.getOrder();
+			else
+				order = lastDelete.getOrder() + 1;
+			ot = new OpType(this.insID, -10000, sql, kind, table, order);
+			this.lastDelete = ot;
+		}
+		if (kind.equalsIgnoreCase("insert")) {
+			if (lastInsert.getQuery().equalsIgnoreCase(sql))
+				order = lastInsert.getOrder();
+			else
+				order = lastInsert.getOrder() + 1;
+			ot = new OpType(this.insID, -10000, sql, kind, table, order);
+			this.lastInsert = ot;
+		}
+
 		return new MyPreparedStatement(orgConnection.prepareStatement(sql), stub, ot, this);
 	}
-	//XXX
+	// XXX
 
 	public CallableStatement prepareCall(String sql) throws SQLException {
 		// TODO Auto-generated method stub

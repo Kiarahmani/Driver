@@ -24,9 +24,9 @@ public class MyStatement implements Statement {
 
 	// looks at the parent connection's current seq number and returns a fresh type
 	// to be used at the scheduler
-	private OpType updatedType() {
-		return new OpType(this.type.getTxnInsID(), this.type.getKind(), con.getSeq());
-	}
+	//private OpType updatedType() {
+	//	return new OpType(this.type.getTxnInsID(), this.type.getKind(), con.getSeq());
+	//}
 
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		// TODO Auto-generated method stub
@@ -40,22 +40,22 @@ public class MyStatement implements Statement {
 
 	public ResultSet executeQuery(String sql) throws SQLException {
 
-		try {
-			stub.execRequest(updatedType());
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-		con.incSeq();
+	//	try {
+	//		stub.execRequest(updatedType());
+	//	} catch (RemoteException e) {
+	//		e.printStackTrace();
+	//	}
+	//	con.incSeq();
 		return orgStatement.executeQuery(sql);
 	}
 
 	public int executeUpdate(String sql) throws SQLException {
-		try {
-			stub.execRequest(updatedType());
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-		con.incSeq();
+	//	try {
+	//		stub.execRequest(updatedType());
+	//	} catch (RemoteException e) {
+	//		e.printStackTrace();
+	//	}
+	//	con.incSeq();
 		return orgStatement.executeUpdate(sql);
 	}
 

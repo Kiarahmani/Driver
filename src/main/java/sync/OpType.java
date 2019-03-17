@@ -7,44 +7,67 @@ public class OpType implements Serializable {
 	 * 
 	 */
 	private int txnInsID;
+	private String query;
+	private int txnOrder;
 	private String kind;
-	private int seqNo;
+	private int order;
+	private String table;
 
-	public OpType(int txnInsID, String kind, int seqNo) {
-		this.kind = kind;
-		this.seqNo = seqNo;
+	public OpType(int txnInsID, int txnOrder, String query, String kind, String table, int order) {
 		this.txnInsID = txnInsID;
-	}
+		this.txnOrder = txnOrder;
+		this.query = query;
+		this.kind = kind;
+		this.table = table;
+		this.order = order;
 
-	public int getTxnInsID() {
-		return txnInsID;
 	}
 
 	public String getKind() {
-		return kind;
+		return this.kind;
 	}
 
-	public int getSeqNo() {
-		return seqNo;
+	public int getOrder() {
+		return this.order;
+	}
+
+	public String getTable() {
+		return this.table;
+	}
+
+	public int getTxnInsID() {
+		return this.txnInsID;
+	}
+
+	public String getQuery() {
+		return this.query;
+	}
+
+	public int getTxnOrder() {
+		return this.txnOrder;
 	}
 
 	public boolean isEqual(OpType other) {
-		return (other.getTxnInsID() == this.txnInsID && other.getSeqNo() == this.seqNo
-				&& this.kind.equals(other.getKind()));
+		return (other.getTxnInsID() == this.txnInsID && this.kind.equalsIgnoreCase(other.getKind())
+				&& this.table.equalsIgnoreCase(other.getTable()) && this.order == other.getOrder());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
+
 		OpType op = (OpType) obj;
-		return (op.getTxnInsID() == this.txnInsID && op.getSeqNo() == this.seqNo /*&& this.kind.equals(op.getKind())*/);
+
+		return (op.getTxnInsID() == this.txnInsID && this.kind.equalsIgnoreCase(op.getKind())
+				&& this.table.equalsIgnoreCase(op.getTable()) && this.order == op.getOrder());
 	}
 
 	public String toString() {
-		return kind + "[TID#" + txnInsID + "--Seq#" + seqNo + "]";
+		return "[TID:" + txnInsID + "--Seq:" + txnOrder + "--kind:" + kind + "#" + order + "--Tb:" + table + "]";
+
 	}
 
 	@Override
 	public int hashCode() {
-		return kind.hashCode() + txnInsID * 100 + seqNo;
+		return table.hashCode() + kind.hashCode() + txnInsID * 100;
 	}
 }

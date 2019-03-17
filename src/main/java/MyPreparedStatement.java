@@ -46,20 +46,18 @@ public class MyPreparedStatement implements PreparedStatement {
 
 	// replaces the text of the query with the most recent bounded parameters
 	private String updateSQL() {
-		String words = this.type.getKind();
+		String words = this.type.getQuery();
 		int index = 1;
-
-		while (words.indexOf("?") != -1) {
+		while (words.indexOf("?") != -1)
 			words = words.replaceFirst("\\?", this.bindValues.get(index++));
-		}
-
 		return words;
 	}
 
 	// looks at the parent connection's current seq number and returns a fresh type
 	// to be used at the scheduler
 	private OpType updatedType() {
-		return new OpType(this.type.getTxnInsID(), this.type.getKind(), con.getSeq());
+		return new OpType(this.type.getTxnInsID(), con.getSeq(), this.type.getQuery(), this.type.getKind(),
+				this.type.getTable(), this.type.getOrder());
 	}
 
 	public ResultSet executeQuery(String sql) throws SQLException {

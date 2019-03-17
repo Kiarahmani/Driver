@@ -45,7 +45,7 @@ public class Schedule implements RemoteService {
 					OpType nextLock = execOrder.get(seqIndex + 1);
 					synchronized (nextLock) {
 						seqIndex++;
-						System.out.println("permitting: " + ot);
+						System.out.println(seqIndex + ": permitting:  " + ot);
 						try {
 							Thread.sleep(_DATABASE_DELAY);
 						} catch (InterruptedException e1) {
@@ -58,17 +58,42 @@ public class Schedule implements RemoteService {
 				try {
 					int myOrder = execOrder.indexOf(ot);
 					if (myOrder == -1) {
-						System.out.println("permitting: " + ot);
+						System.out.println(seqIndex + ": unspecified: " + ot);
 						return;
 					}
+					// if there is a single specifications for this operations
+					// then must go to the end
+					if (myOrder == execOrder.lastIndexOf(ot)) {
+						if (myOrder <= seqIndex) {
+							System.out.println("loop pattrn: " + ot);
+							return;
+						}
+					} else {
+						System.out.println("seqIndex:" + seqIndex);
+						System.out.println("execOrder.size():" + execOrder.size());
+						if (execOrder.lastIndexOf(ot) > seqIndex)
+							for (int i = seqIndex; i < execOrder.size(); i++) {
+								if (execOrder.get(i).equals(ot)) {
+									myOrder = i;
+									break;
+								}
+							}
+						else {
+							// if there are multiple specs but we have already covered them all
+							return;
+						}
+					}
+					System.out.println(seqIndex + ": I am going to wait on: " + myOrder);
 					OpType myLock = execOrder.get(myOrder);
 					synchronized (myLock) {
+						System.out.println(ot.getKind() + "is waiting... on " + myOrder);
 						myLock.wait();
-						System.out.println("permitting: " + ot);
+						System.out.println("permitting:  " + ot);
 						if (seqIndex < execOrder.size() - 1) {
 							OpType myNextLock = execOrder.get(execOrder.indexOf(ot) + 1);
 							synchronized (myNextLock) {
 								seqIndex++;
+								// System.out.println("permitting: " + ot);
 
 								try {
 									Thread.sleep(_DATABASE_DELAY);
