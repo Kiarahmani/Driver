@@ -12,13 +12,13 @@ import sync.OpType;
 public final class DR_schedule {
 	ArrayList<OpType> execOrder;
 
-	public DR_schedule() {
+	public DR_schedule(String benchmarkName, int testNumber) {
 		execOrder = new ArrayList<OpType>();
 
 		// read and par the test config file
 		// JSONParser jsonParser = new JSONParser();
 		try {
-			FileReader reader = new FileReader("../../config/1/schedule.json");
+			FileReader reader = new FileReader("../../config/" + benchmarkName + "/" + testNumber + "/schedule.json");
 			BufferedReader bufferedReader = new BufferedReader(reader);
 			StringBuffer stringBuffer = new StringBuffer();
 			String line;

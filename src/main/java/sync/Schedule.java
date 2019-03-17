@@ -1,11 +1,13 @@
 package sync;
 
 import java.rmi.RemoteException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.print.attribute.standard.MediaSize.Other;
 
+import exceptions.AnomayFinishedException;
 import schedules.DR_schedule;
 
 //Implementing the remote interface 
@@ -15,13 +17,15 @@ public class Schedule implements RemoteService {
 	private int seqIndex;
 	private int _DATABASE_DELAY;
 	private boolean _SHOULD_ENFORCE;
+	private long begin;
 
-	public Schedule(int delay, boolean shouldEnforce) {
+
+	public Schedule(int delay, boolean shouldEnforce, String benchmarkName, int testNumber) {
+		this.begin = System.currentTimeMillis();
 		this.seqIndex = 0;
-		this.execOrder = new DR_schedule().getSchedule(); // this can and should be changed per application/anomaly
+		this.execOrder = new DR_schedule(benchmarkName,testNumber).getSchedule(); 
 		this._SHOULD_ENFORCE = shouldEnforce;
 		this._DATABASE_DELAY = delay;
-
 	}
 
 	// Implementing the interface method
@@ -31,7 +35,18 @@ public class Schedule implements RemoteService {
 	}
 
 	public void execRequest(OpType ot) throws RemoteException {
-		System.out.println("requested:   " + ot);
+		System.out.println("@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+				+ "s -- requested:   " + ot);
+		if (execOrder.get(seqIndex).getTxnInsID() == -99) {
+			System.out.println("@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+					+ "s -- ANOMALY REPLAY ENDED!");
+			try {
+				Thread.sleep(10000000);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+
 		try {
 			Thread.sleep(_DATABASE_DELAY);
 		} catch (InterruptedException e1) {
@@ -45,7 +60,9 @@ public class Schedule implements RemoteService {
 					OpType nextLock = execOrder.get(seqIndex + 1);
 					synchronized (nextLock) {
 						seqIndex++;
-						System.out.println(seqIndex + ": permitting:  " + ot);
+						System.out.println(
+								"@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+										+ "s -- permitting:  " + ot);
 						try {
 							Thread.sleep(_DATABASE_DELAY);
 						} catch (InterruptedException e1) {
@@ -56,22 +73,34 @@ public class Schedule implements RemoteService {
 				}
 			} else {
 				try {
+					if (execOrder.get(seqIndex).getTxnInsID() == -99) {
+						System.out.println(
+								"@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+										+ "s -- ANOMALY REPLAY ENDED!");
+						try {
+							Thread.sleep(10000000);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
 					int myOrder = execOrder.indexOf(ot);
 					if (myOrder == -1) {
-						System.out.println(seqIndex + ": unspecified: " + ot);
+						System.out.println(
+								"@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+										+ "s -- unspecified: " + ot);
 						return;
 					}
 					// if there is a single specifications for this operations
 					// then must go to the end
 					if (myOrder == execOrder.lastIndexOf(ot)) {
 						if (myOrder <= seqIndex) {
-							System.out.println("loop pattrn: " + ot);
+							System.out.println("@T"
+									+ new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+									+ "s -- loop pattrn: " + ot);
 							return;
 						}
-					} else {
-						System.out.println("seqIndex:" + seqIndex);
-						System.out.println("execOrder.size():" + execOrder.size());
-						if (execOrder.lastIndexOf(ot) > seqIndex)
+					} else {// execOrder.get(seqIndex + 1)
+						if (execOrder.lastIndexOf(ot) > seqIndex) // figure out how many we have covered so far
 							for (int i = seqIndex; i < execOrder.size(); i++) {
 								if (execOrder.get(i).equals(ot)) {
 									myOrder = i;
@@ -83,23 +112,24 @@ public class Schedule implements RemoteService {
 							return;
 						}
 					}
-					System.out.println(seqIndex + ": I am going to wait on: " + myOrder);
+					System.out.println(
+							"@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+									+ "s -- wait on " + myOrder + ":   " + ot);
 					OpType myLock = execOrder.get(myOrder);
 					synchronized (myLock) {
-						System.out.println(ot.getKind() + "is waiting... on " + myOrder);
 						myLock.wait();
-						System.out.println("permitting:  " + ot);
+						try {
+							Thread.sleep(_DATABASE_DELAY);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+						System.out.println(
+								"@T" + new DecimalFormat("#0.0").format((System.currentTimeMillis() - begin) / 1000D)
+										+ "s -- permitting:  " + ot);
 						if (seqIndex < execOrder.size() - 1) {
 							OpType myNextLock = execOrder.get(execOrder.indexOf(ot) + 1);
 							synchronized (myNextLock) {
 								seqIndex++;
-								// System.out.println("permitting: " + ot);
-
-								try {
-									Thread.sleep(_DATABASE_DELAY);
-								} catch (InterruptedException e1) {
-									e1.printStackTrace();
-								}
 								myNextLock.notify();
 							}
 						}

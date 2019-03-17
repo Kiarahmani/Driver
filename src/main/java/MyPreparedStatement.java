@@ -364,7 +364,8 @@ public class MyPreparedStatement implements PreparedStatement {
 	}
 
 	public void setString(int parameterIndex, String x) throws SQLException {
-		// TODO Auto-generated method stub
+		this.bindValues.put(parameterIndex, String.valueOf(x));
+		orgPreparedStatement.setString(parameterIndex, x);
 
 	}
 
@@ -374,17 +375,20 @@ public class MyPreparedStatement implements PreparedStatement {
 	}
 
 	public void setDate(int parameterIndex, Date x) throws SQLException {
-		// TODO Auto-generated method stub
+		this.bindValues.put(parameterIndex, String.valueOf(x));
+		orgPreparedStatement.setDate(parameterIndex, x);
 
 	}
 
 	public void setTime(int parameterIndex, Time x) throws SQLException {
-		// TODO Auto-generated method stub
+		this.bindValues.put(parameterIndex, String.valueOf(x));
+		orgPreparedStatement.setTime(parameterIndex, x);
 
 	}
 
 	public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-		// TODO Auto-generated method stub
+		this.bindValues.put(parameterIndex, String.valueOf(x));
+		orgPreparedStatement.setTimestamp(parameterIndex, x);
 
 	}
 

@@ -16,6 +16,7 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -28,10 +29,10 @@ public class MyConnection implements Connection {
 	RemoteService stub;
 	private int insID;
 	private int seq;
-	private OpType lastUpdate;
-	private OpType lastSelect;
-	private OpType lastDelete;
-	private OpType lastInsert;
+	private Map<String, OpType> lastUpdate;
+	private Map<String, OpType> lastSelect;
+	private Map<String, OpType> lastDelete;
+	private Map<String, OpType> lastInsert;
 
 	public void incSeq() {
 		this.seq++;
@@ -53,6 +54,10 @@ public class MyConnection implements Connection {
 		stub.printTestMsg(insID);
 		this.insID = insID;
 		this.seq = 0;
+		lastUpdate = new HashMap<>();
+		lastSelect = new HashMap<>();
+		lastDelete = new HashMap<>();
+		lastInsert = new HashMap<>();
 	}
 
 	public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -83,6 +88,8 @@ public class MyConnection implements Connection {
 			table = arr[2];
 		else if (kind.equalsIgnoreCase("update"))
 			table = arr[1];
+		else if (kind.equalsIgnoreCase("insert"))
+			table = arr[2];
 		else
 			for (int i = 1; i < arr.length; i++) {
 				if (arr[i].equalsIgnoreCase("from")) {
@@ -93,38 +100,40 @@ public class MyConnection implements Connection {
 
 		// detect loops
 		if (kind.equalsIgnoreCase("update")) {
-			if (lastUpdate != null)
-				if (lastUpdate.getQuery().equalsIgnoreCase(sql))
-					order = lastUpdate.getOrder();
+			if (lastUpdate.get(table) != null)
+				if (lastUpdate.get(table).getQuery().equalsIgnoreCase(sql))
+					order = lastUpdate.get(table).getOrder();
 				else
-					order = lastUpdate.getOrder() + 1;
+					order = lastUpdate.get(table).getOrder() + 1;
 			ot = new OpType(this.insID, -10000, sql, kind, table, order);
-			this.lastUpdate = ot;
+			this.lastUpdate.put(table, ot);
 		}
 		if (kind.equalsIgnoreCase("select")) {
-			if (lastSelect != null)
-				if (lastSelect.getQuery().equalsIgnoreCase(sql))
-					order = lastSelect.getOrder();
+			if (lastSelect.get(table) != null)
+				if (lastSelect.get(table).getQuery().equalsIgnoreCase(sql))
+					order = lastSelect.get(table).getOrder();
 				else
-					order = lastSelect.getOrder() + 1;
+					order = lastSelect.get(table).getOrder() + 1;
 			ot = new OpType(this.insID, -10000, sql, kind, table, order);
-			this.lastSelect = ot;
+			this.lastSelect.put(table, ot);
 		}
 		if (kind.equalsIgnoreCase("delete")) {
-			if (lastDelete.getQuery().equalsIgnoreCase(sql))
-				order = lastDelete.getOrder();
-			else
-				order = lastDelete.getOrder() + 1;
+			if (lastDelete.get(table) != null)
+				if (lastDelete.get(table).getQuery().equalsIgnoreCase(sql))
+					order = lastDelete.get(table).getOrder();
+				else
+					order = lastDelete.get(table).getOrder() + 1;
 			ot = new OpType(this.insID, -10000, sql, kind, table, order);
-			this.lastDelete = ot;
+			this.lastDelete.put(table, ot);
 		}
 		if (kind.equalsIgnoreCase("insert")) {
-			if (lastInsert.getQuery().equalsIgnoreCase(sql))
-				order = lastInsert.getOrder();
-			else
-				order = lastInsert.getOrder() + 1;
+			if (lastInsert.get(table) != null)
+				if (lastInsert.get(table).getQuery().equalsIgnoreCase(sql))
+					order = lastInsert.get(table).getOrder();
+				else
+					order = lastInsert.get(table).getOrder() + 1;
 			ot = new OpType(this.insID, -10000, sql, kind, table, order);
-			this.lastInsert = ot;
+			this.lastInsert.put(table, ot);
 		}
 
 		return new MyPreparedStatement(orgConnection.prepareStatement(sql), stub, ot, this);
