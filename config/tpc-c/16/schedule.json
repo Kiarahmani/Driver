@@ -1,0 +1,5 @@
+1,select,customer,1
+2,select,customer,1
+2,update,customer,1
+1,update,customer,1
+-99,"","",-99

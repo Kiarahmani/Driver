@@ -1,5 +1,5 @@
-1,select,new_order,1
-2,select,new_order,1
-1,delete,new_order,1
-2,delete,new_order,1
+1,select,NEW_ORDER,1
+2,select,NEW_ORDER,1
+1,delete,NEW_ORDER,1
+2,delete,NEW_ORDER,1
 -99,"","",-99

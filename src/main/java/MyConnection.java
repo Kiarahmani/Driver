@@ -78,7 +78,7 @@ public class MyConnection implements Connection {
 
 	// XXX
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		String arr[] = sql.split(" ");
+		String arr[] = (sql.replace(" ALLOW FILTERING", "")).split(" ");
 		String kind = arr[0];
 		OpType ot = null;
 		int order = 1;

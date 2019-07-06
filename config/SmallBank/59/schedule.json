@@ -1,0 +1,5 @@
+1,select,savings,1
+2,select,checking,1
+1,update,checking,1
+2,update,savings,1
+-99,"","",-99
