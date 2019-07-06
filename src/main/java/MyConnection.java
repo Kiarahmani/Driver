@@ -45,7 +45,13 @@ public class MyConnection implements Connection {
 	public MyConnection(int insID) throws Exception {
 		Class.forName("com.github.adejanovski.cassandra.jdbc.CassandraDriver");
 		System.out.println(">> original JDBC driver loaded");
-		orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" + ":1904" + insID + "/testks");
+		
+
+		//orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" + ":1904" + insID + "/testks");
+		orgConnection =       DriverManager.getConnection("jdbc:cassandra://localhost:19041/testks");
+		
+		
+		
 		System.out.println("orgConnection: "+ orgConnection);
 		System.out.println(">> connection established: localhost:1904" + insID);
 		Registry registry = LocateRegistry.getRegistry(null);
