@@ -44,7 +44,7 @@ public class MyConnection implements Connection {
 
 	public MyConnection(int insID) throws Exception {
 		Class.forName("com.github.adejanovski.cassandra.jdbc.CassandraDriver");
-		System.out.println(">> original JDBC driver loaded");
+		System.out.println(">> original JDBC driver loaded1");
 		
 
 		//orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" + ":1904" + insID + "/testks");
