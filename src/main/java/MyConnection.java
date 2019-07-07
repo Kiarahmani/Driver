@@ -48,7 +48,11 @@ public class MyConnection implements Connection {
 
 		// orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" +
 		// ":1904" + insID + "/testks");
-		orgConnection = java.sql.DriverManager.getConnection("kir");
+		 Properties p;
+     	p = new Properties();
+     	p.setProperty("ID", "1");
+     	p.setProperty("dbName", "feedback");
+		orgConnection = java.sql.DriverManager.getConnection("jdbc:cassandra://localhost:19041/testks", p);
 
 		System.out.println("orgConnection: " + orgConnection);
 		System.out.println(">> connection established: localhost:1904" + insID);
