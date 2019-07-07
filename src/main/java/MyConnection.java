@@ -44,17 +44,14 @@ public class MyConnection implements Connection {
 
 	public MyConnection(int insID) throws Exception {
 		Class.forName("com.github.adejanovski.cassandra.jdbc.CassandraDriver");
-		System.out.println(">> original JDBC driver loaded4");
-
-		// orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" +
-		// ":1904" + insID + "/testks");
-		 Properties p;
-     	p = new Properties();
-     	p.setProperty("ID", "1");
-     	p.setProperty("dbName", "feedback");
-		orgConnection = java.sql.DriverManager.getConnection("jdbc:cassandra://localhost:19041/testks", p);
+		System.out.println(">> original JDBC driver loaded4");		
+		orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost:19041/testks");
 
 		System.out.println("orgConnection: " + orgConnection);
+		
+		
+		
+		
 		System.out.println(">> connection established: localhost:1904" + insID);
 		Registry registry = LocateRegistry.getRegistry(null);
 		System.out.println(">> modified driver registered");
