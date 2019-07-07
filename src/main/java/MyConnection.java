@@ -44,11 +44,11 @@ public class MyConnection implements Connection {
 
 	public MyConnection(int insID) throws Exception {
 		Class.forName("com.github.adejanovski.cassandra.jdbc.CassandraDriver");
-		System.out.println(">> original JDBC driver loaded2");
+		System.out.println(">> original JDBC driver loaded3");
 		
 
 		//orgConnection = DriverManager.getConnection("jdbc:cassandra://localhost" + ":1904" + insID + "/testks");
-		orgConnection =  java.sql.DriverManager.getConnection("jdbc:cassandra://localhost:19041/testks");
+		orgConnection =  java.sql.DriverManager.getConnection(null);
 		
 		
 		
