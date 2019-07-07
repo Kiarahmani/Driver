@@ -10,13 +10,9 @@ import java.util.logging.Logger;
 public class MyDriver implements Driver {
 
 	public Connection connect(String url, Properties info) throws SQLException {
+		if (url.contains("cassandra"))
+			return null;
 		MyConnection myc = null;
-		try {
-			Integer.valueOf(info.getProperty("id"));
-		}
-		catch (Exception e) {
-			System.out.println("KIRAM DAHAN e PEDARET!");
-		}
 		int insID = Integer.valueOf(info.getProperty("id"));
 		try {
 			myc = new MyConnection(insID);
